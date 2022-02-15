@@ -22,14 +22,14 @@ We have to account for
 - //#endif
  */
 public class Main {
-    private static final Path workDir = Path.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark/argouml-app/src/org/argouml/");
+    private static final Path basePath = Path.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark/argouml-app/src/");
     private static final Path outputFile = Path.of("result/argouml.spl.csv");
     private static final FormulaFactory factory = new FormulaFactory();
 
 
     public static void main(String... args) throws IOException {
         // Retrieve List of all files
-        final List<Path> javaFiles = searchJavaFiles(workDir);
+        final List<Path> javaFiles = searchJavaFiles(basePath);
         System.out.println("Found " + javaFiles.size() + " Java files.");
 //        Formula test = factory.and(factory.or(factory.literal("A", false), factory.literal("B", true)), factory.or(factory.literal("C", false), factory.literal("D", true)));
 //        System.out.println(test);
@@ -156,7 +156,7 @@ public class Main {
     }
 
     public static String toCSVLine(Path path, CodeBlock codeBlock) {
-        return String.format("%s;%s;%s;%s;%d;%d", path.toString(), "true", fixCondition(codeBlock.blockCondition().toString()), fixCondition(codeBlock.getPresenceCondition().toString()), codeBlock.start(), codeBlock.end());
+        return String.format("%s;%s;%s;%s;%d;%d", basePath.relativize(path), "true", fixCondition(codeBlock.blockCondition().toString()), fixCondition(codeBlock.getPresenceCondition().toString()), codeBlock.start(), codeBlock.end());
     }
 
     public static String fixCondition(String condition) {

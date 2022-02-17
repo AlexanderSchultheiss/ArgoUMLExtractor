@@ -163,6 +163,9 @@ public class GroundTruthExtraction {
 
     public static String fixCondition(String condition) {
         condition = condition.replaceAll("&", "&&");
+        condition = condition.replaceAll("\\$true", "true");
+        condition = condition.replaceAll("\\$false", "false");
+        condition = condition.replaceAll("~", "!");
         return condition.replaceAll("\\|", "||");
     }
 }

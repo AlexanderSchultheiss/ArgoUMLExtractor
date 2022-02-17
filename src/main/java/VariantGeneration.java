@@ -4,6 +4,7 @@ import vevos.feature.config.SimpleConfiguration;
 import vevos.functjonal.Lazy;
 import vevos.functjonal.Result;
 import vevos.io.Resources;
+import vevos.util.Logger;
 import vevos.util.io.CaseSensitivePath;
 import vevos.variability.SPLCommit;
 import vevos.variability.VariabilityDataset;
@@ -38,6 +39,7 @@ public class VariantGeneration {
         final VariantGenerationOptions generationOptions = VariantGenerationOptions.ExitOnError(artefactFilter);
 
         for (final Variant variant : sampleAllVariants()) {
+            Logger.info("Generating variant " + variant.getName());
             /// Let's put the variant into our target directory but indexed by commit hash and its name.
             final CaseSensitivePath variantDir = variantsGenerationDir.resolve(commit.id(), variant.getName());
             final Result<GroundTruth, Exception> result =
@@ -60,7 +62,8 @@ public class VariantGeneration {
         List<Variant> variants = new ArrayList<>(featurePowerSet.size());
         int i = 0;
         for (Set<String> configuration : featurePowerSet) {
-            variants.add(new Variant(String.format("var_%d", i), new SimpleConfiguration(configuration.stream().toList())));
+            Variant variant = new Variant(String.format("var_%d", i), new SimpleConfiguration(configuration.stream().toList()));
+            variants.add(variant);
             i++;
         }
         return variants;

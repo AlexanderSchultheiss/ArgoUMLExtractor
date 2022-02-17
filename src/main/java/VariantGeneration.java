@@ -15,6 +15,7 @@ import vevos.variability.pc.groundtruth.GroundTruth;
 import vevos.variability.pc.options.ArtefactFilter;
 import vevos.variability.pc.options.VariantGenerationOptions;
 
+import java.nio.file.Files;
 import java.util.*;
 
 public class VariantGeneration {
@@ -39,20 +40,29 @@ public class VariantGeneration {
         final VariantGenerationOptions generationOptions = VariantGenerationOptions.ExitOnError(artefactFilter);
 
         for (final Variant variant : sampleAllVariants()) {
-            Logger.info("Generating variant " + variant.getName());
             /// Let's put the variant into our target directory but indexed by commit hash and its name.
             final CaseSensitivePath variantDir = variantsGenerationDir.resolve(commit.id(), variant.getName());
-            final Result<GroundTruth, Exception> result =
-                    pcs.generateVariant(variant, splRepositoryPath, variantDir, generationOptions);
-            if (result.isSuccess()) {
-                final GroundTruth groundTruth = result.getSuccess();/// 1. the presence conditions.
-                final Artefact presenceConditionsOfVariant = groundTruth.variant();
-                /// 2. a map that stores matchings of blocks for each source code file
-                final Map<CaseSensitivePath, AnnotationGroundTruth> fileMatches = groundTruth.fileMatches();
+            if (!Files.exists(variantDir.path())) {
+                Logger.info("Generating variant " + variant.getName());
+                final Result<GroundTruth, Exception> result =
+                        pcs.generateVariant(variant, splRepositoryPath, variantDir, generationOptions);
+                if (result.isSuccess()) {
+                    final GroundTruth groundTruth = result.getSuccess();/// 1. the presence conditions.
+                    final Artefact presenceConditionsOfVariant = groundTruth.variant();
 
-                /// We can also export the ground truth PCs of the variant.
-                Resources.Instance().write(Artefact.class, presenceConditionsOfVariant, variantDir.resolve("pcs.variant.csv").path());
+                    /// We can also export the ground truth PCs of the variant.
+                    Resources.Instance().write(Artefact.class, presenceConditionsOfVariant, variantDir.resolve("pcs.variant.csv").path());
+                }
             }
+        }
+
+        for (final Variant variant : sampleVariants(3)) {
+            Logger.info("Loading variant " + variant.getName());
+            /// Let's put the variant into our target directory but indexed by commit hash and its name.
+            final CaseSensitivePath variantDir = variantsGenerationDir.resolve(commit.id(), variant.getName());
+            Artefact result = Resources.Instance().load(Artefact.class, variantDir.resolve("pcs.variant.csv").path());
+            var pc = result.getPresenceConditionOf(CaseSensitivePath.of("argouml-app/src/org/argouml/application/Main.java"), 700);
+            System.out.println("Loaded.");
         }
     }
 
@@ -78,5 +88,11 @@ public class VariantGeneration {
             result.addAll(powerSet(reducedSet));
         }
         return result;
+    }
+
+    private static List<Variant> sampleVariants(final int sampleSize) {
+        final List<Variant> allVariants = sampleAllVariants();
+        Collections.shuffle(allVariants);
+        return allVariants.subList(0, sampleSize);
     }
 }

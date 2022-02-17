@@ -21,7 +21,8 @@ We have to account for
 - //#else
 - //#endif
  */
-public class Main {
+public class GroundTruthExtraction {
+
     private static final Path basePath = Path.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark/argouml-app/src/");
     private static final Path outputFile = Path.of("result/argouml.spl.csv");
     private static final FormulaFactory factory = new FormulaFactory();

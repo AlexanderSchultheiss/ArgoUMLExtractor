@@ -23,14 +23,15 @@ We have to account for
  */
 public class GroundTruthExtraction {
 
-    private static final Path basePath = Path.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark/argouml-app/src/");
+    private static final Path basePath = Path.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark");
+    private static final Path searchPath = basePath.resolve("argouml-app/src/");
     private static final Path outputFile = Path.of("result/argouml.spl.csv");
     private static final FormulaFactory factory = new FormulaFactory();
 
 
     public static void main(String... args) throws IOException {
         // Retrieve List of all files
-        final List<Path> javaFiles = searchJavaFiles(basePath);
+        final List<Path> javaFiles = searchJavaFiles(searchPath);
         System.out.println("Found " + javaFiles.size() + " Java files.");
 //        Formula test = factory.and(factory.or(factory.literal("A", false), factory.literal("B", true)), factory.or(factory.literal("C", false), factory.literal("D", true)));
 //        System.out.println(test);

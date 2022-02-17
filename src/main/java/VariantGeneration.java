@@ -10,7 +10,6 @@ import vevos.variability.SPLCommit;
 import vevos.variability.VariabilityDataset;
 import vevos.variability.pc.Artefact;
 import vevos.variability.pc.SourceCodeFile;
-import vevos.variability.pc.groundtruth.AnnotationGroundTruth;
 import vevos.variability.pc.groundtruth.GroundTruth;
 import vevos.variability.pc.options.ArtefactFilter;
 import vevos.variability.pc.options.VariantGenerationOptions;

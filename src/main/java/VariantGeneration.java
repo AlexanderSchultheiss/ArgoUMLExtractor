@@ -67,7 +67,7 @@ public class VariantGeneration {
         for (final Variant variant : sampleVariants(3).keySet()) {
             Logger.info("Loading variant " + variant.getName());
             /// Let's put the variant into our target directory but indexed by commit hash and its name.
-            final CaseSensitivePath variantDir = variantsGenerationDir.resolve(commit.id(), variant.getName());
+            final CaseSensitivePath variantDir = variantsGenerationDir.resolve(variant.getName());
             Artefact result = Resources.Instance().load(Artefact.class, variantDir.resolve("pcs.variant.csv").path());
             var pc = result.getPresenceConditionOf(CaseSensitivePath.of("argouml-app/src/org/argouml/application/Main.java"), 700);
             System.out.println("Loaded.");
@@ -81,7 +81,7 @@ public class VariantGeneration {
         int i = 0;
         for (Set<String> configuration : featurePowerSet) {
             final List<String> features = new ArrayList<>(configuration);
-            Variant variant = new Variant(String.format("var_%d", i), new SimpleConfiguration(features));
+            Variant variant = new Variant(String.format("Variant_%d", i), new SimpleConfiguration(features));
             variants.put(variant, features);
             i++;
         }

@@ -23,7 +23,7 @@ We have to account for
  */
 public class GroundTruthExtraction {
 
-    private static final Path basePath = Path.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark");
+    private static final Path basePath = Path.of("/home/alex/develop/student-projects/BA-Angelina/argouml-spl-benchmark/");
     private static final Path searchPath = basePath.resolve("argouml-app/src/");
     private static final Path outputFile = Path.of("result/argouml.spl.csv");
     private static final FormulaFactory factory = new FormulaFactory();

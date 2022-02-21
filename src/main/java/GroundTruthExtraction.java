@@ -37,6 +37,7 @@ public class GroundTruthExtraction {
 //        System.out.println(test);
         // Parse each file
         List<String> csvLines = new LinkedList<>();
+        csvLines.add("PATH;FC;FM;PC;START;END");
         for (final Path path : javaFiles) {
             final List<CodeBlock> blocks = determineBlocks(path);
             for (CodeBlock block: blocks) {

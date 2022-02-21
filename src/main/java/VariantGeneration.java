@@ -1,5 +1,6 @@
 import vevos.VEVOS;
 import vevos.feature.Variant;
+import vevos.feature.config.FeatureIDEConfiguration;
 import vevos.feature.config.SimpleConfiguration;
 import vevos.functjonal.Lazy;
 import vevos.functjonal.Result;
@@ -14,16 +15,19 @@ import vevos.variability.pc.groundtruth.GroundTruth;
 import vevos.variability.pc.options.ArtefactFilter;
 import vevos.variability.pc.options.VariantGenerationOptions;
 
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class VariantGeneration {
 
     private static final Set<String> features = Set.of("COGNITIVE", "LOGGING", "ACTIVITYDIAGRAM", "STATEDIAGRAM", "SEQUENCEDIAGRAM", "USECASEDIAGRAM", "COLLABORATIONDIAGRAM", "DEPLOYMENTDIAGRAM");
 
-    public static void main(String... args) throws Resources.ResourceIOException {
+    public static void main(String... args) throws Resources.ResourceIOException, IOException {
         VEVOS.Initialize();
-        final CaseSensitivePath splRepositoryPath = CaseSensitivePath.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark/");
+        final CaseSensitivePath splRepositoryPath = CaseSensitivePath.of("/home/alex/develop/student-projects/BA-Angelina/argouml-spl-benchmark/");
         final CaseSensitivePath groundTruthDatasetPath = CaseSensitivePath.of("dataset");
         final CaseSensitivePath variantsGenerationDir = CaseSensitivePath.of("variants");
 
@@ -38,9 +42,10 @@ public class VariantGeneration {
         final ArtefactFilter<SourceCodeFile> artefactFilter = ArtefactFilter.KeepAll();
         final VariantGenerationOptions generationOptions = VariantGenerationOptions.ExitOnError(artefactFilter);
 
-        for (final Variant variant : sampleAllVariants()) {
+        for (final Map.Entry<Variant, List<String>> entry : sampleAllVariants().entrySet()) {
+            Variant variant = entry.getKey();
             /// Let's put the variant into our target directory but indexed by commit hash and its name.
-            final CaseSensitivePath variantDir = variantsGenerationDir.resolve(commit.id(), variant.getName());
+            final CaseSensitivePath variantDir = variantsGenerationDir.resolve(variant.getName());
             if (!Files.exists(variantDir.path())) {
                 Logger.info("Generating variant " + variant.getName());
                 final Result<GroundTruth, Exception> result =
@@ -51,11 +56,15 @@ public class VariantGeneration {
 
                     /// We can also export the ground truth PCs of the variant.
                     Resources.Instance().write(Artefact.class, presenceConditionsOfVariant, variantDir.resolve("pcs.variant.csv").path());
+                    /// Save the configuration
+                    Path configFolder = variantsGenerationDir.path().resolve("configs");
+                    Files.createDirectories(configFolder);
+                    Files.write(configFolder.resolve(variant.getName() + ".config"), entry.getValue());
                 }
             }
         }
 
-        for (final Variant variant : sampleVariants(3)) {
+        for (final Variant variant : sampleVariants(3).keySet()) {
             Logger.info("Loading variant " + variant.getName());
             /// Let's put the variant into our target directory but indexed by commit hash and its name.
             final CaseSensitivePath variantDir = variantsGenerationDir.resolve(commit.id(), variant.getName());
@@ -65,14 +74,15 @@ public class VariantGeneration {
         }
     }
 
-    private static List<Variant> sampleAllVariants() {
+    private static Map<Variant, List<String>> sampleAllVariants() {
         // Get the power set of all features
         Set<Set<String>> featurePowerSet = powerSet(features);
-        List<Variant> variants = new ArrayList<>(featurePowerSet.size());
+        Map<Variant, List<String>> variants = new HashMap<>(featurePowerSet.size());
         int i = 0;
         for (Set<String> configuration : featurePowerSet) {
-            Variant variant = new Variant(String.format("var_%d", i), new SimpleConfiguration(configuration.stream().toList()));
-            variants.add(variant);
+            final List<String> features = new ArrayList<>(configuration);
+            Variant variant = new Variant(String.format("var_%d", i), new SimpleConfiguration(features));
+            variants.put(variant, features);
             i++;
         }
         return variants;
@@ -89,9 +99,12 @@ public class VariantGeneration {
         return result;
     }
 
-    private static List<Variant> sampleVariants(final int sampleSize) {
-        final List<Variant> allVariants = sampleAllVariants();
-        Collections.shuffle(allVariants);
-        return allVariants.subList(0, sampleSize);
+    private static Map<Variant, List<String>> sampleVariants(final int sampleSize) {
+        final Map<Variant,List<String>> allVariants = sampleAllVariants();
+        List<Variant> variants = new ArrayList<>(allVariants.keySet());
+        Collections.shuffle(variants);
+        Map<Variant, List<String>> subset = new HashMap<>();
+        variants.subList(0, sampleSize).forEach(v -> subset.put(v, allVariants.get(v)));
+        return subset;
     }
 }

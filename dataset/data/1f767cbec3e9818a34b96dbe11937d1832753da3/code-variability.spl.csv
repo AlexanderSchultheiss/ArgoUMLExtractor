@@ -1218,7 +1218,7 @@ argouml-app/src/org/argouml/uml/diagram/UmlDiagramRenderer.java;true;STATEDIAGRA
 argouml-app/src/org/argouml/uml/diagram/UmlDiagramRenderer.java;true;USECASEDIAGRAM;USECASEDIAGRAM;336;341
 argouml-app/src/org/argouml/uml/diagram/activity/ui/SelectionActionState.java;true;true;true;1;173
 argouml-app/src/org/argouml/uml/diagram/activity/ui/SelectionActionState.java;true;ACTIVITYDIAGRAM;ACTIVITYDIAGRAM;129;134
-argouml-app/src/org/argouml/uml/diagram/activity/ui/SelectionCallState.java;true;ACTIVITYDIAGRAM;ACTIVITYDIAGRAM;1;60
+argouml-app/src/org/argouml/uml/diagram/activity/ui/SelectionCallState.java;true;ACTIVITYDIAGRAM;ACTIVITYDIAGRAM;1;61
 argouml-app/src/org/argouml/uml/diagram/activity/ui/ModePlacePartition.java;true;ACTIVITYDIAGRAM;ACTIVITYDIAGRAM;1;65
 argouml-app/src/org/argouml/uml/diagram/activity/ui/FigPool.java;true;ACTIVITYDIAGRAM;ACTIVITYDIAGRAM;1;213
 argouml-app/src/org/argouml/uml/diagram/activity/ui/FigObjectFlowState.java;true;ACTIVITYDIAGRAM;ACTIVITYDIAGRAM;1;466

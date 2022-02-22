@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /*
@@ -23,19 +24,22 @@ We have to account for
  */
 public class GroundTruthExtraction {
 
-    private static final Path basePath = Path.of("/home/alex/develop/student-projects/BA-Angelina/argouml-spl-benchmark/");
+    private static final Path basePath = Path.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark/");
     private static final Path searchPath = basePath.resolve("argouml-app/src/");
-    private static final Path outputFile = Path.of("result/argouml.spl.csv");
+    private static final Path outputFile = Path.of("dataset/data/1f767cbec3e9818a34b96dbe11937d1832753da3/code-variability.spl.csv");
     private static final FormulaFactory factory = new FormulaFactory();
+    public static final String IF_DEFINED = "//#if defined";
+    public static final String ELSE = "//#else";
+    public static final String ENDIF = "//#endif";
 
 
     public static void main(String... args) throws IOException {
         // Retrieve List of all files
         final List<Path> javaFiles = searchJavaFiles(searchPath);
         System.out.println("Found " + javaFiles.size() + " Java files.");
-//        Formula test = factory.and(factory.or(factory.literal("A", false), factory.literal("B", true)), factory.or(factory.literal("C", false), factory.literal("D", true)));
-//        System.out.println(test);
-        // Parse each file
+        // Preprocess files
+        preprocessFiles(javaFiles);
+
         List<String> csvLines = new LinkedList<>();
         csvLines.add("PATH;FC;FM;PC;START;END");
         for (final Path path : javaFiles) {
@@ -50,15 +54,47 @@ public class GroundTruthExtraction {
         Files.write(outputFile, csvLines);
     }
 
-    public static List<Path> searchJavaFiles(final Path root) throws IOException {
-        return Files
-                .find(root,
-                        Integer.MAX_VALUE,
-                        (filePath, fileAttr) -> fileAttr.isRegularFile() && filePath.toString().endsWith(".java"))
-                .collect(Collectors.toList());
+    public static void preprocessFiles(final List<Path> javaFiles) {
+        for (final Path pathToFile : javaFiles) {
+            List<String> lines = readLines(pathToFile);
+            List<String> processedLines = new LinkedList<>();
+            for (final String line : lines) {
+                if (blockStart(line)) {
+                    String[] parts = line.split(IF_DEFINED);
+                    processedLines.add(parts[0]);
+                    processedLines.add(IF_DEFINED + parts[1]);
+                } else if (blockSwitch(line)) {
+                    String[] parts = line.split(ELSE);
+                    processedLines.add(parts[0]);
+                    if (parts.length > 1) {
+                        processedLines.add(ELSE + parts[1]);
+                    } else {
+                        processedLines.add(ELSE);
+                    }
+                } else if (blockEnd(line)) {
+                    String[] parts = line.split(ENDIF);
+                    if (parts.length == 0) {
+                        processedLines.add("");
+                        processedLines.add(ENDIF);
+                    } else {
+                        processedLines.add(parts[0]);
+                        processedLines.add(ENDIF);
+                    }
+                } else {
+                    processedLines.add(line);
+                }
+            }
+
+            try {
+                Files.write(pathToFile, processedLines);
+            } catch (IOException e) {
+                System.err.println("Was not able to write " + pathToFile);
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    public static List<CodeBlock> determineBlocks(final Path pathToFile) {
+    private static List<String> readLines(Path pathToFile) {
         List<String> lines;
         try {
             lines = Files.readAllLines(pathToFile, StandardCharsets.UTF_8);
@@ -69,8 +105,20 @@ public class GroundTruthExtraction {
                 System.err.println("Was not able to read " + pathToFile);
                 throw new RuntimeException(e);
             }
-
         }
+        return lines;
+    }
+
+    public static List<Path> searchJavaFiles(final Path root) throws IOException {
+        return Files
+                .find(root,
+                        Integer.MAX_VALUE,
+                        (filePath, fileAttr) -> fileAttr.isRegularFile() && filePath.toString().endsWith(".java"))
+                .collect(Collectors.toList());
+    }
+
+    public static List<CodeBlock> determineBlocks(final Path pathToFile) {
+        List<String> lines = readLines(pathToFile);
         final List<CodeBlock> blocks = new LinkedList<>();
         final LinkedList<CodeBlock.UnderConstruction> unfinishedBlocks = new LinkedList<>();
         final LinkedList<Formula> nestedFormulas = new LinkedList<>();
@@ -99,7 +147,7 @@ public class GroundTruthExtraction {
                 if (unfinishedBlocks.isEmpty()) {
                     throw new IllegalStateException("No unfinished blocks remain in " + pathToFile + " at line " + i);
                 }
-                blocks.add(CodeBlock.finishBlock(Objects.requireNonNull(unfinishedBlocks.pollLast()), i));
+                    blocks.add(CodeBlock.finishBlock(Objects.requireNonNull(unfinishedBlocks.pollLast()), i));
                 nestedFormulas.pollLast();
             }
         }
@@ -122,15 +170,15 @@ public class GroundTruthExtraction {
     }
 
     public static boolean blockStart(final String line) {
-        return line.contains("//#if defined");
+        return line.contains(IF_DEFINED);
     }
 
     public static boolean blockSwitch(final String line) {
-        return line.contains("//#else");
+        return line.contains(ELSE);
     }
 
     public static boolean blockEnd(final String line) {
-        return line.contains("//#endif");
+        return line.contains(ENDIF);
     }
 
     public static Formula toFormula(String line) {

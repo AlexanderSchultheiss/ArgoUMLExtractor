@@ -27,7 +27,7 @@ public class VariantGeneration {
 
     public static void main(String... args) throws Resources.ResourceIOException, IOException {
         VEVOS.Initialize();
-        final CaseSensitivePath splRepositoryPath = CaseSensitivePath.of("/home/alex/develop/student-projects/BA-Angelina/argouml-spl-benchmark/");
+        final CaseSensitivePath splRepositoryPath = CaseSensitivePath.of("/home/alex/develop/bachelor_projects/BA-Angelina/argouml-spl-benchmark/");
         final CaseSensitivePath groundTruthDatasetPath = CaseSensitivePath.of("dataset");
         final CaseSensitivePath variantsGenerationDir = CaseSensitivePath.of("variants");
 

@@ -65,11 +65,14 @@ public class GroundTruthExtraction {
                     processedLines.add(IF_DEFINED + parts[1]);
                 } else if (blockSwitch(line)) {
                     String[] parts = line.split(ELSE);
-                    processedLines.add(parts[0]);
-                    if (parts.length > 1) {
-                        processedLines.add(ELSE + parts[1]);
-                    } else {
+                    if (parts.length == 0) {
                         processedLines.add(ELSE);
+                    } else if (parts.length == 1) {
+                        processedLines.add(parts[0]);
+                        processedLines.add(ELSE);
+                    } else {
+                        processedLines.add(parts[0]);
+                        processedLines.add(ELSE + parts[1]);
                     }
                 } else if (blockEnd(line)) {
                     String[] parts = line.split(ENDIF);
